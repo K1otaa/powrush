@@ -2,20 +2,8 @@
 session_start();
 include 'config.php';
 
-if (!isset($_SESSION["user_id"])) {
-    header("Location: login.php");
-    exit();
-}
-
-$user_id = $_SESSION["user_id"];
-$sql = "SELECT p.name, p.price, c.quantity, p.id FROM cart c JOIN products p ON c.product_id = p.id WHERE c.user_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-// Проверка на пустую корзину
-if ($result->num_rows == 0) {
+// Проверка, есть ли товары в корзине
+if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
     echo "Ваша корзина пуста.";
     exit();
 }
@@ -44,13 +32,13 @@ if ($result->num_rows == 0) {
         </tr>
         <?php
         $total = 0;
-        while ($row = $result->fetch_assoc()) {
-            $subtotal = $row["price"] * $row["quantity"];
+        foreach ($_SESSION['cart'] as $product) {
+            $subtotal = $product['price'] * $product['quantity'];
             $total += $subtotal;
             echo "<tr>";
-            echo "<td>" . $row["name"] . "</td>";
-            echo "<td>" . $row["quantity"] . "</td>";
-            echo "<td>" . $row["price"] . " ₽</td>";
+            echo "<td>" . $product['name'] . "</td>";
+            echo "<td>" . $product['quantity'] . "</td>";
+            echo "<td>" . $product['price'] . " ₽</td>";
             echo "<td>" . $subtotal . " ₽</td>";
             echo "</tr>";
         }
@@ -64,9 +52,9 @@ if ($result->num_rows == 0) {
     <h3>Оплата:</h3>
     <label for="payment_method">Способ оплаты:</label>
     <select name="payment_method" id="payment_method" required>
-        <option value="credit_card">Кредитная карта</option>
+        <option value="credit_card">Дебетовая карта</option>
         <option value="paypal">PayPal</option>
-        <option value="cash_on_delivery">Наложенный платеж</option>
+        <option value="cash_on_delivery">Наличными</option>
     </select>
     
     <h3>Общая сумма: <?php echo $total; ?> ₽</h3>
@@ -76,8 +64,3 @@ if ($result->num_rows == 0) {
 
 </body>
 </html>
-
-<?php
-$stmt->close();
-$conn->close();
-?>

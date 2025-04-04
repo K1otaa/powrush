@@ -1,24 +1,34 @@
 <?php
 session_start();
-include 'config.php';
+header('Content-Type: application/json');
 
-if (!isset($_SESSION["user_id"])) {
-    echo "Ошибка: Не авторизован.";
-    exit();
+if (!isset($_GET['product_id']) || !isset($_GET['action'])) {
+    echo json_encode(["status" => "error", "message" => "Не переданы параметры"]);
+    exit;
 }
 
-$user_id = $_SESSION["user_id"];
-$product_id = $_POST["product_id"];
-$quantity = $_POST["quantity"];
+$product_id = $_GET['product_id'];
+$action = $_GET['action'];
 
-// Обновляем количество товара в корзине
-$sql = "UPDATE cart SET quantity = ? WHERE user_id = ? AND product_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("iii", $quantity, $user_id, $product_id);
-$stmt->execute();
+if (!isset($_SESSION['cart']) || !isset($_SESSION['cart'][$product_id])) {
+    echo json_encode(["status" => "error", "message" => "Товар не найден в корзине"]);
+    exit;
+}
 
-$stmt->close();
-$conn->close();
+// Увеличение/уменьшение количества товара
+if ($action === 'increase') {
+    $_SESSION['cart'][$product_id]['quantity']++;
+} elseif ($action === 'decrease') {
+    if ($_SESSION['cart'][$product_id]['quantity'] > 1) {
+        $_SESSION['cart'][$product_id]['quantity']--;
+    } else {
+        unset($_SESSION['cart'][$product_id]); // Удаляем товар, если его количество стало 0
+    }
+}
 
-echo "Количество товара обновлено"; // Ответ для AJAX
+// Подсчет общего количества товаров
+$totalCount = array_sum(array_column($_SESSION['cart'], 'quantity'));
+
+echo json_encode(["status" => "success", "cartCount" => $totalCount]);
+exit;
 ?>

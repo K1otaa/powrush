@@ -3,72 +3,65 @@ session_start();
 include 'config.php';
 
 if (!isset($_GET['order_id'])) {
-    echo "Ошибка: Нет данных о заказе.";
+    echo "Ошибка: Не указан ID заказа.";
     exit();
 }
 
 $order_id = $_GET['order_id'];
 
-// Получаем информацию о заказе
+// Получаем данные о заказе
 $sql = "SELECT * FROM orders WHERE id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $order_id);
 $stmt->execute();
 $order = $stmt->get_result()->fetch_assoc();
 
-// Получаем информацию о товарах в заказе
-$sql_items = "SELECT oi.quantity, p.name, p.price FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?";
+// Получаем товары из заказа
+$sql_items = "SELECT p.name, oi.quantity, p.price FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?";
 $stmt_items = $conn->prepare($sql_items);
 $stmt_items->bind_param("i", $order_id);
 $stmt_items->execute();
-$items = $stmt_items->get_result();
+$result_items = $stmt_items->get_result();
 
-?>
+// Массив для преобразования значения способа оплаты
+$payment_methods = [
+    'credit_card' => 'Дебетовая карта',
+    'paypal' => 'PayPal',
+    'cash_on_delivery' => 'Наличными'
+];
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Подтверждение заказа</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+// Извлекаем способ оплаты из сессии
+$payment_method = $_SESSION['payment_method'] ?? 'Не выбран';
 
-<h2>Ваш заказ №<?php echo $order['id']; ?> оформлен!</h2>
+// Преобразуем в читаемую форму
+$display_payment_method = isset($payment_methods[$payment_method]) ? $payment_methods[$payment_method] : 'Не выбран';
 
-<h3>Детали заказа:</h3>
-<p>Адрес доставки: <?php echo $order['address']; ?></p>
-<p>Способ оплаты: <?php echo $order['payment_method']; ?></p>
+// Выводим информацию о заказе
+echo "<h2>Подтверждение заказа</h2>";
+echo "<p>Номер заказа: " . $order['id'] . "</p>";
+echo "<p>Адрес доставки: " . $order['address'] . "</p>";
 
-<h3>Товары в заказе:</h3>
-<table>
-    <tr>
-        <th>Товар</th>
-        <th>Количество</th>
-        <th>Цена</th>
-        <th>Итого</th>
-    </tr>
-    <?php
-    $total = 0;
-    while ($item = $items->fetch_assoc()) {
-        $subtotal = $item['price'] * $item['quantity'];
-        $total += $subtotal;
-        echo "<tr>";
-        echo "<td>" . $item['name'] . "</td>";
-        echo "<td>" . $item['quantity'] . "</td>";
-        echo "<td>" . $item['price'] . " ₽</td>";
-        echo "<td>" . $subtotal . " ₽</td>";
-        echo "</tr>";
-    }
-    ?>
-</table>
+// Выводим выбранный способ оплаты
+echo "<p>Способ оплаты: " . $display_payment_method . "</p>";
 
-<h3>Общая сумма: <?php echo $total; ?> ₽</h3>
+// Выводим товары в заказе
+echo "<h3>Ваши товары:</h3>";
+echo "<table>";
+echo "<tr><th>Товар</th><th>Количество</th><th>Цена</th><th>Итого</th></tr>";
+$total = 0;
+while ($row = $result_items->fetch_assoc()) {
+    $subtotal = $row['price'] * $row['quantity'];
+    $total += $subtotal;
+    echo "<tr>";
+    echo "<td>" . $row['name'] . "</td>";
+    echo "<td>" . $row['quantity'] . "</td>";
+    echo "<td>" . $row['price'] . " ₽</td>";
+    echo "<td>" . $subtotal . " ₽</td>";
+    echo "</tr>";
+}
+echo "</table>";
+echo "<h3>Общая сумма: " . $total . " ₽</h3>";
 
-</body>
-</html>
-
-<?php
 $stmt->close();
 $stmt_items->close();
 $conn->close();

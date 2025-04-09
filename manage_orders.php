@@ -15,19 +15,6 @@ if (isset($_GET['delete_id'])) {
     exit();
 }
 
-if (isset($_POST['items']) && is_array($_POST['items'])) {
-    foreach ($_POST['items'] as $user_id) {
-        $user_id = intval($user_id);
-        $sql = "DELETE FROM users WHERE id = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-    }
-    echo "Выбранные пользователи удалены.";
-} else {
-    echo "Ошибка: не выбраны пользователи для удаления.";
-}
-
 
 
 $result = $conn->query("SELECT * FROM orders");
@@ -61,30 +48,6 @@ $result = $conn->query("SELECT * FROM orders");
         </tr>
     <?php } ?>
 </table>
-<form method="POST">
-    <table>
-        <tr>
-            <th>Выбрать</th>
-            <th>ID</th>
-            <th>Имя</th>
-            <th>Email</th>
-        </tr>
-        <?php
-        $sql = "SELECT id, name, email FROM users";
-        $result = $conn->query($sql);
-        while ($row = $result->fetch_assoc()) {
-            echo "<tr>";
-            echo "<td><input type='checkbox' name='items[]' value='" . $row['id'] . "'></td>";
-            echo "<td>" . $row['id'] . "</td>";
-            echo "<td>" . $row['name'] . "</td>";
-            echo "<td>" . $row['email'] . "</td>";
-            echo "</tr>";
-        }
-        ?>
-    </table>
-    <button type="submit">Удалить выбранных</button>
-</form>
-
 <a href="admin_dashboard.php">Назад</a>
 </body>
 </html>

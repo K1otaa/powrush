@@ -1,57 +1,250 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
     background-color: #95BFC9;
+    background-image: url(img\noiseEffect.png);
+    background-size: cover;     /* на весь экран */
+    background-position: center center; 
+    background-repeat: no-repeat; 
+    height: 100vh; 
+    margin: 0;
+    padding: 0;
 }
 
-/* Модальное окно */
-.modal {
-    display: none; /* Скрыто по умолчанию */
+.empty-cart {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 25px;
+    font-weight: 500;
+    color: #1E2A47;
+    text-align: left;
+}
+
+.cart-sidebar {
     position: fixed;
-    z-index: 1;
-    left: 0;
     top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgb(0, 0, 0); /* Черный фон */
-    background-color: rgba(0, 0, 0, 0.4); /* Черный фон с прозрачностью */
-    padding-top: 60px;
-}
-
-.modal-content {
+    right: -550px; /* Спрятано полностью */
+    width: 550px;   /* Устанавливаем ширину прямо здесь */
+    height: 100vh;
     background-color: #fff;
-    margin: 5% auto;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+    overflow-y: auto;
+    transition: right 0.3s ease;
     padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 500px;
+    z-index: 1000;
 }
 
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
+.cart-sidebar.open {
+    right: 0; /* Показывается */
 }
 
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
+.cart-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
 }
 
-button {
-    padding: 10px 20px;
-    margin: 10px;
-    cursor: pointer;
+.cart-overlay.active {
+    display: block;
 }
 
-#go-to-cart, #go-to-checkout {
-    background-color: #4CAF50;
-    color: white;
+.cart-item {
+    margin-bottom: 20px;
+}
+
+.remove-item {
+    background: none;
     border: none;
+    cursor: pointer;
 }
 
-#go-to-cart:hover, #go-to-checkout:hover {
-    background-color: #45a049;
+.remove-icon {
+    width: 20px;
+    height: 20px;
 }
+
+.cart-sidebar {
+    position: fixed;
+    top: 0;
+    right: -600px;
+    height: 100vh;
+    background-color: #fff;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+    overflow-y: auto;
+    transition: right 0.3s ease;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.cart-sidebar.open {
+    right: 0;
+}
+
+main {
+    max-width: 1400px;
+    margin: auto;
+    padding: 2rem;
+}
+
+/* Стили для хедера */
+header {
+    color: white;
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+header .logo a {
+    color: white;
+    font-size: 1.8rem;
+    font-family: 'Russo One', sans-serif;
+    text-decoration: none;
+}
+
+header nav {
+    flex-grow: 1;
+    text-align: right;
+}
+
+header .nav-links {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-weight: 500;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+
+
+header .nav-links li {
+    display: inline;
+}
+
+header .nav-links a {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: #1E2A47;
+    font-size: 18px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+header .nav-links a:hover {
+    color: #f9f9f9;
+}
+
+header .cart-container {
+    position: relative;
+    display: inline-block;
+}
+
+.cart-container {
+    position: relative;
+    display: inline-block;
+}
+
+.cart-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.favorite-icon {
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+
+.cart-count {
+    position: absolute;
+    top: -5px;
+    right: -7px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: white;
+    border-radius: 50%;
+    padding: 5px;
+    font-size: 12px;
+    background-color: rgb(78, 98, 196);
+}
+
+/* Адаптивные стили для хедера */
+
+/* Для мобильных устройств (до 600px) */
+@media (max-width: 600px) {
+    header .container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    header .logo a {
+        font-size: 1.5rem;
+    }
+
+    header .nav-links {
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    header .nav-links li {
+        text-align: center;
+    }
+
+    header nav {
+        width: 100%;
+    }
+
+    header .cart-container {
+        top: 10px;
+        right: 10px;
+    }
+
+    header .nav-links.active {
+        display: flex;
+    }
+}
+
+/* Для планшетов (от 600px до 1024px) */
+@media (min-width: 601px) and (max-width: 1024px) {
+    header .nav-links {
+        gap: 15px;
+    }
+
+    header .cart-icon {
+        width: 35px;
+        height: 35px;
+    }
+}
+
+/* Для десктопов (от 1024px и выше) */
+@media (min-width: 1025px) {
+    header .nav-links {
+        gap: 25px;
+    }
+
+    
+}
+
